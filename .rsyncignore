@@ -4,4 +4,4 @@ report/
 .git/
 *.pyc
 deter_username.txt
-*/**/__pycache__/
+**/__pycache__/

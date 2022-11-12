@@ -15,6 +15,7 @@ class CliOptions(BaseModel):
 
 
 class Config(BaseSettings):
+    interface: str = None
     server_host: str
     server_port: int
     cli: CliOptions = CliOptions()

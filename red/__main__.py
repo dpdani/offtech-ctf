@@ -1,9 +1,11 @@
 from typing import Optional
 
+import scapy.config
 import typer
 
 from red.attacks import Attack
 from red.config import CliOptions, config
+from red.utils import get_experiment_interface
 
 
 cli = typer.Typer()
@@ -22,6 +24,11 @@ def attack(attack_name: Attack, bps: Optional[str] = None, pps: Optional[int] = 
         bps=bps,
         pps=pps,
     )
+    if config.interface is None:
+        config.interface = get_experiment_interface()
+    scapy.config.conf.iface = config.interface
+    attack_name.get_script().run()
+
 
 @cli.command()
 def legitimate():
