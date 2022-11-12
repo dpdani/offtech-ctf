@@ -5,12 +5,14 @@ description = ""
 authors = ["Group 3"]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-scapy = "^2.4.5"
-requests = "^2.28.1"
+[tool.poetry.scripts]
+redder = "red.__main__:cli"
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dependencies]
+python = ">=3.6.1"
+scapy = "^2.4.5"
+typer = "^0.7.0"
+pydantic = "1.9.2"
 
 [build-system]
 requires = ["poetry-core"]
