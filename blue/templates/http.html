@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="./index.html">
+                Packet analyzer
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./">Home</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./http">HTTP Requests</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./index.html">All packets</a>
+                    </li>
+                </ul>
+            </div>
+    </nav>
+
+    <br>
+    <div class="container-fluid">
+        <h2> HTTP requests: </h2>
+        <br>
+            {% for your_list_element in list %}
+            <p>{{ your_list_element }} </p>
+            {% endfor %}
+    </div>
+
+
+</body>
+</html>
