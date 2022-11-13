@@ -130,3 +130,9 @@ dmypy.json
 
 # JetBrains
 .idea/
+
+# Accrocchio to upload the dependencies
+site-packages/
+
+# user
+deter_username.txt
