@@ -1,7 +1,7 @@
-import tomlkit
-from typing import Any
+from typing import List, Optional
 
-from pydantic import BaseModel, BaseSettings, ByteSize
+import tomlkit
+from pydantic import BaseModel, BaseSettings, ByteSize, conint
 
 
 def read_conf_file(settings: BaseSettings):
@@ -10,15 +10,30 @@ def read_conf_file(settings: BaseSettings):
 
 
 class CliOptions(BaseModel):
-    pps: float = None
-    bps: ByteSize = None
+    pps: Optional[float] = None
+    bps: Optional[ByteSize] = None
+
+
+class Attack(BaseModel):
+    interface: Optional[str] = None
+    ip: Optional[str] = None
+    cli: CliOptions = CliOptions()
+    legitimate_client_ip: Optional[str] = None
+    gateway_ext_ip: Optional[str] = None
+    gateway_int_ip: Optional[str] = None
+    spoof_blacklist: Optional[List[str]] = None
+
+
+class Legitimate(BaseModel):
+    rate: conint(ge=2, le=9)
+    resources: List[str]
 
 
 class Config(BaseSettings):
-    interface: str = None
     server_host: str
     server_port: int
-    cli: CliOptions = CliOptions()
+    attack: Attack = Attack()
+    legitimate: Legitimate
 
     class Config:
         env_prefix = 'RED_'

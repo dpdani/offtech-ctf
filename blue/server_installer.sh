@@ -1,4 +1,6 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
+
+set -ex
 
 EXPERIMENT="ctf-resilient-g3"
 PROJECT="offtech"

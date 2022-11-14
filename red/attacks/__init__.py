@@ -7,6 +7,7 @@ class Attack(str, enum.Enum):
     icmp = 'icmp'
     ping = 'ping'
     syn = 'syn'
+    rst = 'rst'
 
     def get_script(self):
         if self == "asd":
@@ -24,3 +25,6 @@ class Attack(str, enum.Enum):
         elif self == "syn":
             from . import syn_flood
             return syn_flood
+        elif self == "rst":
+            from . import rst
+            return rst
