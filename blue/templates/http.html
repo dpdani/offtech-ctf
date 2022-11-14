@@ -32,15 +32,16 @@
         <h2> HTTP requests: </h2>
         <br>
 
-        <b>Average response delay </b>: {{ avg_delay }} ms
+        <b>Average response delay </b>: {{ avg_delay }} s
 
         <br>
         <br>
-        <table id="example" class="display" style="width:100%">
+        <table id="table" class="display" style="width:100%">
             <thead>
                 <tr>
                     <th>Sniff time</th>
                     <th>Source IP</th>
+                    <th>Source port</th>
                     <th>Method</th>
                     <th>URI</th>
                     <th>HTTP version</th>
@@ -60,8 +61,9 @@
     <script>
 
         $(document).ready(function () {
-            $('#example').DataTable({
+            $('#table').DataTable({
                 ajax: 'http://127.0.0.1:5000/get_http_req',
+                order: [[ 0, 'desc' ]]
             });
         });
     </script>

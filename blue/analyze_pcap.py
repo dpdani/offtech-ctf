@@ -7,13 +7,15 @@ import json
 
 from pyshark.capture.pipe_capture import PipeCapture
 import threading
+from collections import OrderedDict
 
 app = Flask(__name__)
 packets_categories_dict = {"TCP": 0, "UDP": 0, "TCP SYN": 0, "ICMP": 0, "Others": 0}
 ip_dict = {}
-full_packets_list = []
+packets_timestamp_list = []
 http_req_packets_list = []
 total_http_delay = 0
+date_dict = OrderedDict()
 
 
 def thread_function(capture):
@@ -25,7 +27,14 @@ def thread_function(capture):
 def analyze(pkt):
     # print(pkt)
     global total_http_delay
-    full_packets_list.append(pkt)
+    packets_timestamp_list.append(pkt.sniff_timestamp)
+
+    key = str(pkt.sniff_time.replace(microsecond=0))
+    # print(key)
+    if key in date_dict:
+        date_dict[key] = date_dict[key]+1
+    else:
+        date_dict[key] = 1
 
     if 'ip' in pkt:
         if pkt.ip.src not in ip_dict:
@@ -35,17 +44,19 @@ def analyze(pkt):
     if 'tcp' in pkt:
         packets_categories_dict['TCP'] = packets_categories_dict["TCP"] + 1
         ip_dict[pkt.ip.src]["TCP"] = ip_dict[pkt.ip.src]["TCP"] + 1
-        # print("TCP: " + str(packets_categories_dict["TCP"]))
+        if pkt.tcp.flags_syn == "1" and pkt.tcp.flags_ack == "0":
+            packets_categories_dict['TCP SYN'] = packets_categories_dict["TCP SYN"] + 1
+            ip_dict[pkt.ip.src]["TCP SYN"] = ip_dict[pkt.ip.src]["TCP SYN"] + 1
         if 'http' in pkt:
             if hasattr(pkt.http, 'request_line'):  # if it is a HTTP request
-                http_req_packets_list.append([str(pkt.sniff_time), pkt.ip.src, pkt.http.request_method,
+                http_req_packets_list.append([str(pkt.sniff_time), pkt.ip.src, pkt.tcp.srcport, pkt.http.request_method,
                                               pkt.http.request_uri, pkt.http.request_version, pkt.http.host,
                                               pkt.http.user_agent])
                 # print(pkt.http.field_names)
             if hasattr(pkt.http, 'request_in'):  # if it is a HTTP response
-                req_pkt = full_packets_list[int(pkt.http.request_in) - 1]  # -1 because frame index start from 1
+                req_timestamp = packets_timestamp_list[int(pkt.http.request_in) - 1]  # -1 because frame index start from 1
                 # print(req_pkt)
-                approximate_delay = float(pkt.sniff_timestamp) - float(req_pkt.sniff_timestamp)
+                approximate_delay = float(pkt.sniff_timestamp) - float(req_timestamp)
                 # print("delay: " + str(approximate_delay))
                 total_http_delay += approximate_delay
 
@@ -100,6 +111,14 @@ def get_ips():
         ret.append([key, data["TCP"], data["UDP"], data["ICMP"], data["Others"]])
 
     return json.dumps({"data": ret})
+
+
+@app.route("/get_pkt_sec")
+def get_pkt_sec():
+    ret = []
+    for key, data in date_dict.items():
+        ret.append({"x": key, "y": data})
+    return json.dumps(ret[-30:])
 
 
 if __name__ == '__main__':
