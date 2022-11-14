@@ -70,7 +70,10 @@ def root():
 
 @app.route("/http.html")
 def http():
-    return render_template('http.html', avg_delay=(total_http_delay / len(http_req_packets_list)))
+    if len(http_req_packets_list) > 0:
+        return render_template('http.html', avg_delay=(total_http_delay / len(http_req_packets_list)))
+    else:
+        return render_template('http.html', avg_delay=0)
 
 
 @app.route("/ip.html")
