@@ -29,23 +29,16 @@
 
     <br>
     <div class="container-fluid">
-        <h2> HTTP requests: </h2>
-        <br>
-
-        <b>Average response delay </b>: {{ avg_delay }} ms
-
-        <br>
+        <h2> IP sources stats: </h2>
         <br>
         <table id="example" class="display" style="width:100%">
             <thead>
                 <tr>
-                    <th>Sniff time</th>
                     <th>Source IP</th>
-                    <th>Method</th>
-                    <th>URI</th>
-                    <th>HTTP version</th>
-                    <th>Host</th>
-                    <th>User-Agent</th>
+                    <th>TCP</th>
+                    <th>UDP</th>
+                    <th>ICMP</th>
+                    <th>Others</th>
                 </tr>
             </thead>
         </table>
@@ -61,7 +54,7 @@
 
         $(document).ready(function () {
             $('#example').DataTable({
-                ajax: 'http://127.0.0.1:5000/get_http_req',
+                ajax: 'http://127.0.0.1:5000/get_ips',
             });
         });
     </script>

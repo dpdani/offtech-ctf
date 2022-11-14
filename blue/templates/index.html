@@ -18,10 +18,10 @@
                         <a class="nav-link" href="./">Home</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="./http">HTTP Requests</a>
+                        <a class="nav-link" href="./http.html">HTTP Requests</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="./index.html">All packets</a>
+                        <a class="nav-link" href="./ip.html">IP addresses</a>
                     </li>
                 </ul>
             </div>
@@ -31,13 +31,6 @@
     <div class="container-fluid">
         <h2> Protocol statistics: </h2>
         <br>
-        <div class="row">
-        <div class="col-lg-3">
-            <p>TCP: {{TCP}}</p>
-            <p>UDP: {{UDP}}</p>
-            <p>ICMP: {{ICMP}}</p>
-        </div>
-        </div>
         <div class="row">
             <div class="col-lg-6">
             <div class="card mb-3">
@@ -87,12 +80,13 @@
         });
 
         setInterval(function(){
-            fetch('http://127.0.0.1:5000/get_categories')
+            fetch('get_categories')
             .then((response) => response.json())
             .then((data) => {
                 bar.data.datasets[0].data[0] = data.TCP;
                 bar.data.datasets[0].data[1] = data.UDP;
                 bar.data.datasets[0].data[2] = data.ICMP;
+                bar.data.datasets[0].data[3] = data.Others;
                 bar.update();
             });
 
