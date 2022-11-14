@@ -136,3 +136,7 @@ site-packages/
 
 # user
 deter_username.txt
+
+# capture
+
+blue/pcap.pcap

@@ -14,4 +14,7 @@ echo '6' | sudo tee /var/www/html/6.html;
 echo '7' | sudo tee /var/www/html/7.html;
 echo '8' | sudo tee /var/www/html/8.html;
 echo '9' | sudo tee /var/www/html/9.html;
-echo '10' | sudo tee /var/www/html/10.html;"
+echo '10' | sudo tee /var/www/html/10.html;
+sudo rm -f /var/www/html/index.html"
+
+
