@@ -63,7 +63,7 @@ def http_flood(SOURCE_IP="10.1.5.3", count=100):
     # Spawn a thread per request
     all_threads = []
     for _ in range(count):
-        t1 = threading.Thread(target=attack(thread_num, thread_num_mutex))
+        t1 = threading.Thread(target=attack, args=(thread_num, thread_num_mutex,))
         t1.start()
         all_threads.append(t1)
 
