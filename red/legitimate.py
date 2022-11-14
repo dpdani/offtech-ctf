@@ -9,8 +9,8 @@ if len(sys.argv) != 2:
 rate = int(sys.argv[1])
 if rate > 9:
     rate = 9
-elif rate < 1:
-    rate = 1
+elif rate < 2:
+    rate = 2
 
 while True:
     try:
