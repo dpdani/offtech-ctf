@@ -45,38 +45,37 @@ def analyze(pkt):
     if 'ip' in pkt:
         if pkt.ip.src not in ip_dict:
             ip_dict[pkt.ip.src] = {"TCP": 0, "UDP": 0, "TCP SYN": 0, "ICMP": 0, "Others": 0}
+        # TODO: do we analyze all the packets or discard the responses from the server ??? pkt.ip.src != "10.1.5.2
+        if 'tcp' in pkt:
+            packets_categories_dict['TCP'] = packets_categories_dict["TCP"] + 1
+            ip_dict[pkt.ip.src]["TCP"] = ip_dict[pkt.ip.src]["TCP"] + 1
+            if pkt.tcp.flags_syn == "1" and pkt.tcp.flags_ack == "0":
+                packets_categories_dict['TCP SYN'] = packets_categories_dict["TCP SYN"] + 1
+                ip_dict[pkt.ip.src]["TCP SYN"] = ip_dict[pkt.ip.src]["TCP SYN"] + 1
+            if 'http' in pkt:
+                if hasattr(pkt.http, 'request_line'):  # if it is a HTTP request
+                    http_req_packets_list.append([str(pkt.sniff_time), pkt.ip.src, pkt.tcp.srcport, pkt.http.request_method,
+                                                pkt.http.request_uri, pkt.http.request_version, pkt.http.host,
+                                                pkt.http.user_agent])
+                    # print(pkt.http.field_names)
+                if hasattr(pkt.http, 'request_in'):  # if it is a HTTP response
+                    # NB: this system to calculate the HTTP response delay works only if there is a response from the server
+                    req_timestamp = packets_timestamp_list[int(pkt.http.request_in) - 1]  # -1 because frame index start from 1
+                    # print(req_pkt)
+                    approximate_delay = float(pkt.sniff_timestamp) - float(req_timestamp)
+                    if approximate_delay > 0.5:
+                        slow_http_responses = slow_http_responses + 1
+                    # print("delay: " + str(approximate_delay))
+                    total_http_delay += approximate_delay
 
-    # TODO: do we analyze all the packets or discard the responses from the server ??? pkt.ip.src != "10.1.5.2
-    if 'tcp' in pkt:
-        packets_categories_dict['TCP'] = packets_categories_dict["TCP"] + 1
-        ip_dict[pkt.ip.src]["TCP"] = ip_dict[pkt.ip.src]["TCP"] + 1
-        if pkt.tcp.flags_syn == "1" and pkt.tcp.flags_ack == "0":
-            packets_categories_dict['TCP SYN'] = packets_categories_dict["TCP SYN"] + 1
-            ip_dict[pkt.ip.src]["TCP SYN"] = ip_dict[pkt.ip.src]["TCP SYN"] + 1
-        if 'http' in pkt:
-            if hasattr(pkt.http, 'request_line'):  # if it is a HTTP request
-                http_req_packets_list.append([str(pkt.sniff_time), pkt.ip.src, pkt.tcp.srcport, pkt.http.request_method,
-                                              pkt.http.request_uri, pkt.http.request_version, pkt.http.host,
-                                              pkt.http.user_agent])
-                # print(pkt.http.field_names)
-            if hasattr(pkt.http, 'request_in'):  # if it is a HTTP response
-                # NB: this system to calculate the HTTP response delay works only if there is a response from the server
-                req_timestamp = packets_timestamp_list[int(pkt.http.request_in) - 1]  # -1 because frame index start from 1
-                # print(req_pkt)
-                approximate_delay = float(pkt.sniff_timestamp) - float(req_timestamp)
-                if approximate_delay > 0.5:
-                    slow_http_responses = slow_http_responses + 1
-                # print("delay: " + str(approximate_delay))
-                total_http_delay += approximate_delay
-
-    elif 'udp' in pkt:
-        packets_categories_dict["UDP"] = packets_categories_dict["UDP"] + 1
-        ip_dict[pkt.ip.src]["UDP"] = ip_dict[pkt.ip.src]["UDP"] + 1
-        # print("UDP: " + str(packets_categories_dict["UDP"]))
-    elif 'icmp' in pkt:
-        packets_categories_dict["ICMP"] = packets_categories_dict["ICMP"] + 1
-        ip_dict[pkt.ip.src]["ICMP"] = ip_dict[pkt.ip.src]["ICMP"] + 1
-        # print("ICMP: " + str(packets_categories_dict["ICMP"]))
+        elif 'udp' in pkt:
+            packets_categories_dict["UDP"] = packets_categories_dict["UDP"] + 1
+            ip_dict[pkt.ip.src]["UDP"] = ip_dict[pkt.ip.src]["UDP"] + 1
+            # print("UDP: " + str(packets_categories_dict["UDP"]))
+        elif 'icmp' in pkt:
+            packets_categories_dict["ICMP"] = packets_categories_dict["ICMP"] + 1
+            ip_dict[pkt.ip.src]["ICMP"] = ip_dict[pkt.ip.src]["ICMP"] + 1
+            # print("ICMP: " + str(packets_categories_dict["ICMP"]))
     else:
         packets_categories_dict["Others"] = packets_categories_dict["Others"] + 1
         # ip_dict[pkt.ip.src]["Others"] = ip_dict[pkt.ip.src]["Others"] + 1 # NON IP protocol...
