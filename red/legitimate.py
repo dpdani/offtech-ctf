@@ -16,7 +16,7 @@ def main():
         url = f"http://{config.server_host}:{config.server_port}/{resource}"
         logger.info(f"Requesting {url}")
         try:
-            contents = urllib.request.urlopen(url, timeout=9).read()  # GET requests the server
+            contents = urllib.request.urlopen(url, timeout=0.5).read()  # GET requests the server
         except urllib.error.HTTPError as e:
             logger.info(f"Got: {e}")  # Handle 404 and ignores it because be actually want to request a 404
         except Exception as e:

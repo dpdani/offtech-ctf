@@ -32,16 +32,17 @@ def connection(_: None):
 
 
 def run():
+    if config.attack.cli.bps is None:
+        threads = int(config.attack.cli.pps / pps)
+    else:
+        threads = int(config.attack.cli.bps / bps)
     logger.info(f"Starting with: "
                 f"{possible_string_values} "
                 f"{connection_time} "
                 f"{payload_length} "
                 f"{pps} "
-                f"{bps} ")
-    if config.attack.cli.bps is None:
-        threads = int(config.attack.cli.pps / pps)
-    else:
-        threads = int(config.attack.cli.bps / bps)
+                f"{bps} "
+                f"{threads} ")
 
     while True:
         with ThreadPool(threads) as pool:

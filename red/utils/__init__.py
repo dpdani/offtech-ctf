@@ -1,3 +1,5 @@
+import random
+
 import netifaces
 from scapy.sendrecv import sendpfast
 
@@ -22,3 +24,6 @@ def get_experiment_interface_and_ip():
         else:
             if addr.startswith('10.'):
                 return iface, addr
+
+def random_port():
+    return random.randint(1025, 64000)
