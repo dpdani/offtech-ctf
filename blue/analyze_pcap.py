@@ -15,7 +15,12 @@ ip_dict = {}
 packets_timestamp_list = []
 http_req_packets_list = []
 total_http_delay = 0
+slow_http_responses = 0
 date_dict = OrderedDict()
+
+# TODO: Manage possible concurrency problems
+
+# TODO: http_req_packets_list and packets_timestamp_list may become too big
 
 
 def thread_function(capture):
@@ -27,6 +32,7 @@ def thread_function(capture):
 def analyze(pkt):
     # print(pkt)
     global total_http_delay
+    global slow_http_responses
     packets_timestamp_list.append(pkt.sniff_timestamp)
 
     key = str(pkt.sniff_time.replace(microsecond=0))
@@ -54,9 +60,12 @@ def analyze(pkt):
                                               pkt.http.user_agent])
                 # print(pkt.http.field_names)
             if hasattr(pkt.http, 'request_in'):  # if it is a HTTP response
+                # NB: this system to calculate the HTTP response delay works only if there is a response from the server
                 req_timestamp = packets_timestamp_list[int(pkt.http.request_in) - 1]  # -1 because frame index start from 1
                 # print(req_pkt)
                 approximate_delay = float(pkt.sniff_timestamp) - float(req_timestamp)
+                if approximate_delay > 0.5:
+                    slow_http_responses = slow_http_responses + 1
                 # print("delay: " + str(approximate_delay))
                 total_http_delay += approximate_delay
 
@@ -82,7 +91,8 @@ def root():
 @app.route("/http.html")
 def http():
     if len(http_req_packets_list) > 0:
-        return render_template('http.html', avg_delay=(total_http_delay / len(http_req_packets_list)))
+        return render_template('http.html', avg_delay=(total_http_delay / len(http_req_packets_list)),
+                               slow=slow_http_responses)
     else:
         return render_template('http.html', avg_delay=0)
 
@@ -119,6 +129,15 @@ def get_pkt_sec():
     for key, data in date_dict.items():
         ret.append({"x": key, "y": data})
     return json.dumps(ret[-30:])
+
+
+@app.route("/release_resources")
+def release_resources():
+    global ip_dict
+    global http_req_packets_list
+    ip_dict = {}
+    http_req_packets_list = []
+    return render_template('index.html')
 
 
 if __name__ == '__main__':

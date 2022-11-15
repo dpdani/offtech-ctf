@@ -36,6 +36,7 @@
         <div class="row">
             <div class="col-lg-6">
             <div class="card mb-3">
+              <h5 class="card-title m-2 pl-4">Number of packets by category</h5>
               <div class="card-body">
                 <canvas id="line"></canvas>
               </div>
@@ -45,6 +46,7 @@
         <div class="row">
             <div class="col-lg-9">
             <div class="card mb-3">
+              <h5 class="card-title m-2 pl-4">Packets per second</h5>
               <div class="card-body">
                 <canvas id="time_chart"></canvas>
               </div>
@@ -63,20 +65,20 @@
         let bar = new Chart(document.getElementById("line"), {
             type: 'bar',
             data: {
-              labels: ["TCP", "UDP", "ICMP", "Others"],
+              labels: ["TCP", "TCP SYN", "UDP", "ICMP", "Others"],
               datasets: [
                 {
-                  backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9"],
+                  backgroundColor: ["#3e95cd", "#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9"],
                   data: [0,0,0,0]
                 }
               ]
             },
             options: {
-              legend: { display: false },
-              title: {
-                display: true,
-                text: 'Packets categories bar chart'
-              }
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
             }
         });
 
@@ -113,10 +115,11 @@
             fetch('get_categories')
             .then((response) => response.json())
             .then((data) => {
-                bar.data.datasets[0].data[0] = data.TCP;
-                bar.data.datasets[0].data[1] = data.UDP;
-                bar.data.datasets[0].data[2] = data.ICMP;
-                bar.data.datasets[0].data[3] = data.Others;
+                bar.data.datasets[0].data[0] = data["TCP"];
+                bar.data.datasets[0].data[1] = data["TCP SYN"];
+                bar.data.datasets[0].data[2] = data["UDP"];
+                bar.data.datasets[0].data[3] = data["ICMP"];
+                bar.data.datasets[0].data[4] = data["Others"];
                 bar.update();
             });
 
