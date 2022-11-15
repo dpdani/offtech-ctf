@@ -21,7 +21,7 @@ upload:
 
 prepare-dependencies:
 	rm -rf site-packages
-	ssh otech2ac@users.isi.deterlab.net "rm -rf ~/ctf-resilient/site-packages"
+	ssh $(user_name)@users.isi.deterlab.net "rm -rf ~/ctf-resilient/site-packages"
 	cp -r ~/.pyenv/versions/ctf-red/lib/python3.6/site-packages/ .
 
 upload-dependencies: prepare-dependencies upload

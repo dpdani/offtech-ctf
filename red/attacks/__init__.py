@@ -8,6 +8,7 @@ class Attack(str, enum.Enum):
     ping = 'ping'
     syn = 'syn'
     rst = 'rst'
+    time_moves_slow = 'time-moves-slow'
 
     def get_script(self):
         if self == "asd":
@@ -28,3 +29,6 @@ class Attack(str, enum.Enum):
         elif self == "rst":
             from . import rst
             return rst
+        elif self == "time-moves-slow":
+            from . import time_moves_slow
+            return time_moves_slow
