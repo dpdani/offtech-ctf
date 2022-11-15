@@ -34,7 +34,9 @@
         <h2> Protocol statistics: </h2>
         <br>
         <div class="row">
+
             <div class="col-lg-6">
+                <b>Total packets in the capture session: </b>: {{ total_pkts }}<br><br>
             <div class="card mb-3">
               <h5 class="card-title m-2 pl-4">Number of packets by category</h5>
               <div class="card-body">
@@ -111,7 +113,7 @@
 
         time_chart.options.animation = false; // disables all animations
 
-        function update(){
+        function update_category(){
             fetch('get_categories')
             .then((response) => response.json())
             .then((data) => {
@@ -122,7 +124,9 @@
                 bar.data.datasets[0].data[4] = data["Others"];
                 bar.update();
             });
+        }
 
+        function update_time(){
             fetch('get_pkt_sec')
             .then((response) => response.json())
             .then((data) => {
@@ -131,9 +135,10 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", update)
+        document.addEventListener("DOMContentLoaded", update_time)
 
-        setInterval(update, 1000);
+        setInterval(update_category, 1000);
+        setInterval(update_time, 5000);
 
     </script>
 
