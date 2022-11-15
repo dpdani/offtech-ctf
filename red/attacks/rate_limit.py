@@ -1,4 +1,5 @@
 import random
+import time
 from multiprocessing.pool import ThreadPool
 
 from loguru import logger
@@ -14,7 +15,7 @@ payload = f"GET /1.html HTTP/1.1\r\n\r\n".encode()
 payload_length = len(payload)
 packet_size = (20 + 20 + payload_length) * 8
 empty_size = 20 + 20
-connection_time = packet_size / 100_000_000
+connection_time = packet_size / 100_000_000  # 100Mbps link
 bps = (empty_size + empty_size + empty_size + packet_size + empty_size) / connection_time
 
 
@@ -42,6 +43,7 @@ def connection(_: None):
         ack,
         payload_pkt,
     ])
+    time.sleep(connection_time)
 
 
 def run():
