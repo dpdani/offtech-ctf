@@ -9,6 +9,8 @@ class Attack(str, enum.Enum):
     syn = 'syn'
     rst = 'rst'
     time_moves_slow = 'time-moves-slow'
+    rate_limit = "rate-limit"
+    shut_up = 'shut-up'
 
     def get_script(self):
         if self == "asd":
@@ -32,3 +34,9 @@ class Attack(str, enum.Enum):
         elif self == "time-moves-slow":
             from . import time_moves_slow
             return time_moves_slow
+        elif self == "shut-up":
+            from . import shut_up
+            return shut_up
+        elif self == "rate-limit":
+            from . import rate_limit
+            return rate_limit

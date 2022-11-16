@@ -3,16 +3,14 @@
 
 user_name=`cat deter_username.txt`
 folder_name="ctf-resilient"
+exp_name="flagctf2"
 
 
 install:
-	sudo apt install python3-pip tcpreplay
-	sudo pip install --update pip
-	curl https://pyenv.run | bash
-	pyenv install 3.11
-	pyenv shell 3.11 <<EOF
-		pip install -U pip
-		pip install -e .
+	ssh $(user_name)@users.isi.deterlab.net<<'EOF'
+		ssh client1.$(exp_name).offtech "sudo apt-get install -y tcpreplay iftop"
+		ssh client2.$(exp_name).offtech "sudo apt-get install -y tcpreplay iftop"
+		ssh client3.$(exp_name).offtech "sudo apt-get install -y tcpreplay iftop"
 	EOF
 
 
