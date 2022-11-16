@@ -22,6 +22,7 @@ class Attack(BaseModel):
     gateway_ext_ip: Optional[str] = None
     gateway_int_ip: Optional[str] = None
     spoof_blacklist: Optional[List[str]] = None
+    clients: Optional[List[str]] = None
 
 
 class Legitimate(BaseModel):

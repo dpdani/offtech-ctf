@@ -1,5 +1,6 @@
 import ipaddress
 import random
+import string
 import struct
 
 import netifaces
@@ -30,6 +31,10 @@ def get_experiment_interface_and_ip():
 def random_port():
     return random.randint(1025, 64000)
 
+
+my_iface, my_ip = get_experiment_interface_and_ip()
+my_network = str(ipaddress.ip_interface(f"{my_ip}/24").network)
+
 def spoof_ip():
     def random_ip(network):
         network = ipaddress.IPv4Network(network)
@@ -39,8 +44,11 @@ def spoof_ip():
         ip_address = ipaddress.IPv4Address(network_int + rand_host_int)  # combine the parts
         return ip_address.exploded
 
-    network = "10.0.0.0/8"
-    ip = random_ip(network)
+    ip = random_ip(my_network)
     while ip in config.attack.spoof_blacklist:
-        ip = random_ip(network)
+        ip = random_ip(my_network)
     return ip
+
+possible_string_values = str(string.ascii_letters + string.digits + string.punctuation)
+def generate_random_string(length):
+    return "".join(random.choices(possible_string_values, k=length))

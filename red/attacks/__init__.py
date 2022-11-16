@@ -9,6 +9,7 @@ class Attack(str, enum.Enum):
     syn = 'syn'
     rst = 'rst'
     time_moves_slow = 'time-moves-slow'
+    time_moves_spoof = 'time-moves-spoof'
     rate_limit = "rate-limit"
     shut_up = 'shut-up'
 
@@ -40,3 +41,6 @@ class Attack(str, enum.Enum):
         elif self == "rate-limit":
             from . import rate_limit
             return rate_limit
+        elif self == "time-moves-spoof":
+            from . import time_moves_spoof
+            return time_moves_spoof
