@@ -1,4 +1,5 @@
 import multiprocessing
+import random
 import threading
 import time
 from multiprocessing.pool import ThreadPool
@@ -33,18 +34,41 @@ def connection(_: None):
             ip = my_ip
             port = random_port()
             payload = f"GET {generate_random_string(random_size)} HTTP/1.1\r\n\r\n"
-            syn = IP(dst=config.server_host, src=ip) / TCP(dport=80, sport=port, flags='S')
+            syn = (
+                    IP(dst=config.server_host, src=ip)
+                    / TCP(dport=80, sport=port, flags='S', win=64240,
+                          seq=random.randint(100, 100_000_000),
+                          options=[
+                              ("MSS", 1460),
+                              ("SAckOK", ""),
+                              ("Timestamp", (2350613787, 0)),  # (val, ecr)
+                              ("NOP", 0),
+                              ("wscale", 7),
+                          ])
+            )
             syn_ack = send_and_sniff(syn, ip, port)
             syn_ack.show()
             # logger.info(f"sniffed: {syn_ack.show()}")
-            ack = IP(dst=config.server_host, src=ip) / TCP(dport=80, sport=port, flags='A', seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
+            ack = (
+                    IP(dst=config.server_host, src=ip)
+                    / TCP(dport=80, sport=port, flags='A', ack=1, window=502,
+                          options=[
+                              ("NOP", 0),
+                              ("NOP", 0),
+                              ("Timestamp", (syn_ack[TCP].options["Timestamp"][1] + 1, syn_ack[TCP].options["Timestamp"][0])),  # (val, ecr)
+                          ])
+            )
             send(ack, verbose=False)
             latest = ack
             for char in payload:
                 req = (
                         IP(dst=config.server_host, src=ip)
-                        / TCP(dport=80, sport=port,
-                              seq=latest[TCP].ack, ack=latest[TCP].seq + 1, flags='PA')
+                        / TCP(dport=80, sport=port, seq=latest[TCP].ack, ack=latest[TCP].seq + 1, flags='PA',
+                              options=[
+                                  ("NOP", 0),
+                                  ("NOP", 0),
+                                  ("Timestamp", (syn_ack[TCP].options["Timestamp"][1] + 1, syn_ack[TCP].options["Timestamp"][0])),  # (val, ecr)
+                              ])
                         / char.encode()
                 )
                 logger.info("shish")
@@ -58,6 +82,7 @@ def connection(_: None):
 
 def send_and_sniff(packet, ip, port):
     response = IP()
+
     def sniffer():
         nonlocal response
         response = sniff(
@@ -65,12 +90,12 @@ def send_and_sniff(packet, ip, port):
             count=1,
             iface=my_iface,
         )[0]
+
     s = threading.Thread(target=sniffer)
     s.start()
     send(packet, verbose=False)
     s.join()
     return response
-
 
 
 def run():
