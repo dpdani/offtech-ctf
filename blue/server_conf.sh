@@ -4,7 +4,7 @@ ssh server.$EXPERIMENT.$PROJECT<<EOF
 sudo su -
 cd /etc/apache2/
 touch httpd.conf
-echo -e "RequestReadTimeout handshake=5 header=10 body=3\nTimeOut 5\nKeepAliveTimeout 5\nLimitRequestBody 12000\nLimitRequestFields 50\nLimitRequestFieldSize 4094\nLimitRequestLine 4094\n">>httpd.conf
+echo -e "RequestReadTimeout handshake=5 header=10 body=3\nTimeOut 5\nLimitRequestBody 1200\nLimitRequestFields 50\nLimitRequestFieldSize 4094\nLimitRequestLine 4094\n">>httpd.conf
 echo -e "LoadModule cache_module modules/mod_cache.so
 <IfModule mod_cache.c>
     LoadModule cache_disk_module modules/mod_cache_disk.so
